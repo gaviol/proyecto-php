@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Personas</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #6dc445; /* Color de fondo claro */
+        }
+        .container {
+            background-color: #7a5475; /* Fondo blanco para el contenido */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+        .table thead {
+            background-color: #343a40; /* Fondo oscuro para la cabecera de la tabla */
+            color: white;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Función para cargar todos los registros
+            function loadPersons() {
+                $.ajax({
+                    url: 'read.php',
+                    method: 'GET',
+                    success: function(data) {
+                        $('#personas').html('');
+                        data.forEach(persona => {
+                            $('#personas').append(`
+                                <tr>
+                                    <td>${persona.id}</td>
+                                    <td>${persona.doce_nombre}</td>
+                                    <td>${persona.doce_apellido}</td>
+                                    <td>${persona.per_cumple}</td>
+                                    <td>${persona.per_mail}</td>
+                                    <td>${persona.doce_cel}</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm" onclick="editPerson(${persona.id})">Editar</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deletePerson(${persona.id})">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            `);
+                        });
+                    }
+                });
+            }
+
+            // Cargar registros al cargar la página
+            loadPersons();
+
+            // Crear un nuevo registro
+            $('#form').on('submit', function(e) {
+                e.preventDefault();
+                const formData = $(this).serialize();
+                $.ajax({
+                    url: 'create.php',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        alert(response.message);
+                        loadPersons();
+                    }
+                });
+            });
+
+            // Función para editar un registro
+            window.editPerson = function(id) {
+                $.ajax({
+                    url: 'read.php',
+                    method: 'GET',
+                    data: { id: id },
+                    success: function(persona) {
+                        $('#update_id').val(persona.id);
+                        $('#update_nombre').val(persona.doce_nombre);
+                        $('#update_apellido').val(persona.doce_apellido);
+                        $('#update_cumple').val(persona.per_cumple);
+                        $('#update_email').val(persona.per_mail);
+                        $('#update_celular').val(persona.doce_cel);
+                    }
+                });
+            };
+
+            // Actualizar un registro existente
+            $('#updateForm').on('submit', function(e) {
+                e.preventDefault();
+                const formData = $(this).serialize();
+                $.ajax({
+                    url: 'update.php',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        alert(response.message);
+                        loadPersons();
+                    }
+                });
+            });
+
+            // Eliminar un registro
+            window.deletePerson = function(id) {
+                $.ajax({
+                    url: 'delete.php',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function(response) {
+                        alert(response.message);
+                        loadPersons();
+                    }
+                });
+            };
+        });
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-5">CRUD Personas</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Registrar Persona</h2>
+                <form id="form" class="mb-4">
+                    <div class="form-group">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellido">Apellido:</label>
+                        <input type="text" class="form-control" id="apellido" name="apellido" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cumple">Fecha de Nacimiento:</label>
+                        <input type="date" class="form-control" id="cumple" name="cumple" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico:</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="celular">Número de Celular:</label>
+                        <input type="text" class="form-control" id="celular" name="celular" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Registrar</button>
+                </form>
+            </div>
+
+            <div class="col-md-6">
+                <h2>Actualizar Persona</h2>
+                <form id="updateForm" class="mb-4">
+                    <input type="hidden" id="update_id" name="id">
+                    <div class="form-group">
+                        <label for="update_nombre">Nombre:</label>
+                        <input type="text" class="form-control" id="update_nombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="update_apellido">Apellido:</label>
+                        <input type="text" class="form-control" id="update_apellido" name="apellido" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="update_cumple">Fecha de Nacimiento:</label>
+                        <input type="date" class="form-control" id="update_cumple" name="cumple" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="update_email">Correo Electrónico:</label>
+                        <input type="email" class="form-control" id="update_email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="update_celular">Número de Celular:</label>
+                        <input type="text" class="form-control" id="update_celular" name="celular" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Actualizar</button>
+                </form>
+            </div>
+        </div>
+
+        <h2 class="text-center">Personas Registradas</h2>
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Fecha de Nacimiento</th>
+                    <th>Correo Electrónico</th>
+                    <th>Número de Celular</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="personas"></tbody>
+        </table>
+    </div>
+</body>
+</html>
